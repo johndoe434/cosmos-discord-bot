@@ -68,3 +68,12 @@ class HumanDatetimeConverter(HumanTimeDeltaConverter):
                 return time.HumanDateTimeMixin.from_human(argument)
             except ValueError:
                 raise commands.BadArgument
+
+
+class PrimeTierConverter(commands.Converter):
+
+    async def convert(self, ctx, argument):
+        try:
+            return ctx.bot.PrimeTier(int(argument))
+        except (TypeError, ValueError):
+            raise commands.BadArgument

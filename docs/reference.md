@@ -24,6 +24,7 @@ Cosmos bot uses modular approach for each of its functions and commands. Each of
 * [Economy](profile/economy.md)
 * [CosmosPermissions](guild/cosmos-permissions.md)
 * [DeadMemes](fun/dead-memes.md)
+* [Giveaway](guild/giveaway.md)
 * [GuildSettings](guild/guild-settings/)
 * [HasteBin](tools/haste-bin.md)
 * [Imgur](tools/imgur.md)
@@ -79,6 +80,7 @@ Every command begins with a pre-defined [prefix](guild/guild-settings/prefix.md)
 | [embed](https://cosmos.thecosmos.space/tools/utilities.md#embed) | Make bot send a neat embed with all provided attributes. | `;embed [msg]` |
 | [enable](https://cosmos.thecosmos.space/guild/cosmos-permissions.md#enable) | Enables provided function in all of the specified channels. | `;enable <function> [channels...]` |
 | [fermions](https://cosmos.thecosmos.space/profile/economy#fermions) | Displays number of Fermions you have. | `;fermions` |
+| [giveaway](https://cosmos.thecosmos.space/guild/giveaway.md#giveaway) | Creates giveaway in the server and waits for members to participate by reacting to the message. | `;giveaway <duration> [winners=1] [channel] <reward>` |
 | [givepoints](https://cosmos.thecosmos.space/guild/role-shop/settings.md#givepoints) | Generate and give points to specified member. | `;givepoints <points> <member>` |
 | [hastebin](https://cosmos.thecosmos.space/tools/haste-bin#hastebin) | Posts the provided content to [https://hastebin.com/](https://hastebin.com/) and displays a shareable link. | `;hastebin <content>` |
 | [imgur](https://cosmos.thecosmos.space/tools/imgur#imgur) | Uploads provided URL or attached image to imgur.com and returns the direct URL of the image. | `;imgur [url]` |
@@ -86,6 +88,7 @@ Every command begins with a pre-defined [prefix](guild/guild-settings/prefix.md)
 | [leaderboards](https://cosmos.thecosmos.space/profile/leaderboards.md#leaderboards) | Displays top members with maximum chat experience points. | `;leaderboards` |
 | [level](https://cosmos.thecosmos.space/levels#level) | Displays current level and experience points. | `;level [member]` |
 | [logger](https://cosmos.thecosmos.space/moderation/logger#logger) | Displays list of loggers enabled in different channels. | `;logger` |
+| [makeprime](https://cosmos.thecosmos.space/settings/administrator-settings#makeprime) | Command to grant prime membership to any of the servers you're administrator of. | `;makeprime [server]` |
 | [moderators](https://cosmos.thecosmos.space/settings/administrator-settings#moderators) | Displays list of roles and members who has been assigned as special moderators. | `;moderators` |
 | [modlogs](https://cosmos.thecosmos.space/moderation/moderation#modlogs) | Displays all of the moderation logs of specified member. | `;modlogs <member>` |
 | [mute](https://cosmos.thecosmos.space/moderation/moderation#mute) | Mutes specified member from voice and also adds the muted role. | `;mute <member> [reason]` |

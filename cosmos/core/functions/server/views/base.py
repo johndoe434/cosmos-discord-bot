@@ -42,7 +42,11 @@ class ViewsMeta(ABCMeta):
 class BaseView(web.View, metaclass=ViewsMeta):
 
     HEADER = "Authorization"
+    DISPATCH_EVENT = str()
 
     @property
     def bot(self):
         return self.request.app["COSMOS"]
+
+    async def fetch_cosmos_user_profile(self, user_id):
+        return await self.bot.profile_cache.get_profile(user_id)

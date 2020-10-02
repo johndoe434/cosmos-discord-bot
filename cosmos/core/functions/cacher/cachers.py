@@ -16,63 +16,100 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import pickle
-from abc import ABC, abstractmethod
-
 import aioredis
+import pickle
+import itertools
 import cachetools
 
+from abc import ABC
+from collections.abc import MutableMapping
 
-class Cache(object):
 
-    __metaclass__ = ABC
+class Cache(MutableMapping):
 
-    @abstractmethod
-    def update(self, *args, **kwargs):
-        raise NotImplementedError
+    PERMANENT_ATTRIBUTE = "_cache_permanent_persist_"
 
-    @abstractmethod
-    def pop(self, *args, **kwargs):
-        raise NotImplementedError
+    def _is_permanent(self, value):
+        return bool(getattr(value, self.PERMANENT_ATTRIBUTE, False))
 
-    @abstractmethod
-    def keys(self, *args, **kwargs):
-        raise NotImplementedError
+    def getsizeof(self, value):
+        return 0 if self._is_permanent(value) else 1
 
-    @abstractmethod
-    def get(self, key: str or int):
-        raise NotImplementedError
+    def __init__(self, *args, **kwargs):
+        self.__permanent_elements = dict()
+
+    def __repr__(self):
+        return f"<PERMANENT={repr(self.__permanent_elements)} | CACHE={super().__repr__()}>"
+
+    def __setitem__(self, key, value):
+        if not self._is_permanent(value):
+            return super().__setitem__(key, value)
+        self.__permanent_elements[key] = value
+
+    def __getitem__(self, key):
+        if not self._is_permanent(self.__permanent_elements.get(key)):
+            return super().__getitem__(key)
+        return self.__permanent_elements[key]
+
+    def __delitem__(self, key):
+        if not self._is_permanent(self.__permanent_elements.get(key)):
+            return super().__delitem__(key)
+        del self.__permanent_elements[key]
+
+    def __contains__(self, key):
+        return super().__contains__(key) or key in self.__permanent_elements
+
+    def __iter__(self):
+        return itertools.chain(iter(self.__permanent_elements), super().__iter__())
+
+    def __len__(self):
+        return super().__len__() + len(self.__permanent_elements)
 
     def set(self, key: str or int, data):
         self.update({key: data})
 
+    def get(self, key: str or int, default=None):
+        try:
+            return self.__getitem__(key)
+        except KeyError:
+            return default
+
+    def pop(self, key, default=None):
+        try:
+            if not self._is_permanent(self.__permanent_elements.get(key)):
+                return super().pop(key)
+            return self.__permanent_elements.pop(key)
+        except KeyError:
+            return default
+
     def remove(self, key: str or int):
-        if key in self.keys():
-            self.pop(key)
+        self.pop(key)
 
 
-class DictCache(dict, Cache, ABC):
+class DictCache(dict, Cache):
 
-    def __init__(self):
-        super().__init__()
+    pass
 
 
-class TTLCache(cachetools.TTLCache, Cache, ABC):
+class TTLCache(Cache, cachetools.TTLCache, ABC):
 
     def __init__(self, max_size: int = 50000, ttl: int = 60, **kwargs):
-        super().__init__(max_size, ttl, **kwargs)
+        Cache.__init__(self, **kwargs)
+        cachetools.TTLCache.__init__(self, max_size, ttl, **kwargs)
 
 
-class LRUCache(cachetools.LRUCache, Cache, ABC):
-
-    def __init__(self, max_size: int = 50000, **kwargs):
-        super().__init__(max_size, **kwargs)
-
-
-class LFUCache(cachetools.LFUCache, Cache, ABC):
+class LRUCache(Cache, cachetools.LRUCache, ABC):
 
     def __init__(self, max_size: int = 50000, **kwargs):
-        super().__init__(max_size, **kwargs)
+        Cache.__init__(self, **kwargs)
+        cachetools.LRUCache.__init__(self, max_size, **kwargs)
+
+
+class LFUCache(Cache, cachetools.LFUCache, ABC):
+
+    def __init__(self, max_size: int = 50000, **kwargs):
+        Cache.__init__(self, **kwargs)
+        cachetools.LFUCache.__init__(self, max_size, **kwargs)
 
 
 class AsyncDictCache(DictCache, ABC):
@@ -80,13 +117,13 @@ class AsyncDictCache(DictCache, ABC):
     def __init__(self):
         super().__init__()
 
-    async def get(self, key: str):
+    async def get(self, key: str, default=None):
         # byte = super().get(key)
         # if byte:
         #    data = pickle.loads(byte)
         # else:
         #    data = None
-        return super().get(key, dict())
+        return super().get(key, default=default)
 
     async def set(self, key: str, data):
         # byte = pickle.dumps(data)

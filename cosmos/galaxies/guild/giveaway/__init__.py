@@ -13,20 +13,4 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from . import base
-from aiohttp import web
-
-
-class DBLHook(base.BaseView):
-
-    ROUTE = "/dbl/"
-    TYPE = base.ViewTypes.WEBHOOK
-    DISPATCH_EVENT = "dbl_vote"
-
-    async def post(self):
-        json = await self.request.json()
-        self.bot.log.info(f"Received [{self.NAME}] payload: {json}.")
-        user_id = int(json["user"])
-        profile = await self.fetch_cosmos_user_profile(user_id)
-        self.bot.dispatch(self.DISPATCH_EVENT, profile)
-        return web.Response()
+from .giveaway import Giveaway

@@ -16,7 +16,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from cosmos.core.utilities.converters import CosmosUserProfileConverter, CosmosGuildConverter
+from cosmos.core.utilities.converters import PrimeTierConverter
+from cosmos.core.utilities.converters import CosmosGuildConverter
+from cosmos.core.utilities.converters import CosmosUserProfileConverter
 
 import typing
 
@@ -28,11 +30,20 @@ from discord.ext import commands
 class AdminCommands(Admin):
 
     @Admin.command(name="giveprime")
-    async def give_prime(self, ctx, *, target: typing.Union[CosmosUserProfileConverter, CosmosGuildConverter]):
+    async def give_prime(
+            self, ctx, user: CosmosUserProfileConverter,
+            server: typing.Optional[CosmosGuildConverter] = None,
+            tier: typing.Optional[PrimeTierConverter] = None,
+    ):
         if not await ctx.confirm():
             return
-        await target.make_prime()
-        await ctx.send_line(f"🎉    {target.name} has been given prime.")
+        extra = str()
+        guild_id = None
+        if server:
+            guild_id = server.id
+            extra = f"and {server.guild.name}"
+        await user.make_prime(tier=tier, guild_id=guild_id)
+        await ctx.send_line(f"🎉    {user.user.name} {extra} has been given prime.")
 
     @give_prime.error
     async def give_prime_error(self, ctx, error):
@@ -40,11 +51,11 @@ class AdminCommands(Admin):
             return await ctx.send_line(f"❌    A dark argument was passed.")
 
     @Admin.command(name="removeprime")
-    async def remove_prime(self, ctx, *, target: typing.Union[CosmosUserProfileConverter, CosmosGuildConverter]):
+    async def remove_prime(self, ctx, *, user: CosmosUserProfileConverter):
         if not await ctx.confirm():
             return
-        await target.make_prime(make=False)
-        await ctx.send_line(f"✅    Removed prime from {target.name}.")
+        await user.remove_prime()
+        await ctx.send_line(f"✅    Removed prime from {user.name}.")
 
     @remove_prime.error
     async def remove_prime_error(self, ctx, error):
